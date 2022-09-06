@@ -3,7 +3,7 @@
         <div class="blog-pages">
             <div class="col-md-12 panel">
                 <div class="panel-body">
-                    <h2 class="text-center">创作文章</h2>
+                    <h2 class="text-center">{{ articleId ? '编辑文章' : '创作文章' }}</h2>
                     <hr>
                     <div data-validator-form>
                         <div class="form-group">
@@ -31,11 +31,26 @@
 
     export default {
         name: 'Create',
-        // 添加相关数据
         data() {
             return {
                 title: '', // 文章标题
-                content: '' // 文章内容
+                content: '', // 文章内容
+                articleId: undefined // 文章 ID
+            }
+        },
+        beforeRouteEnter(to, from, next) {
+            next(vm => {
+                vm.setArticleId(vm.$route.params.articleId)
+            })
+        },
+        beforeRouteLeave(to, from, next) {
+            this.clearData()
+            next()
+        },
+        watch: {
+            '$route'(to) {
+                this.clearData()
+                this.setArticleId(to.params.articleId)
             }
         },
         mounted() {
@@ -53,61 +68,65 @@
                 }
             })
 
-            // 监听编辑器的 change 事件
             simplemde.codemirror.on('change', () => {
-                // 将改变后的值赋给文章内容
                 this.content = simplemde.value()
             })
 
-            // 将 simplemde 添加到当前实例，以在其他地方调用
             this.simplemde = simplemde
-            // 初始化标题和内容
-            this.fillContent()
         },
         methods: {
-            // 编辑器只会自动保存文章的内容，我们需要自己保存文章的标题
             saveTitle() {
                 ls.setItem('smde_title', this.title)
             },
-            // 初始化标题和内容
-            fillContent() {
+            fillContent(articleId) {
                 const simplemde = this.simplemde
-                const title = ls.getItem('smde_title')
+                const smde_title = ls.getItem('smde_title')
 
-                // 如果 localStorage 有标题数据，使用它作为文章标题
-                if (title !== null) {
-                    this.title = title
+                if (articleId !== undefined) {
+                    const article = this.$store.getters.getArticleById(articleId)
+
+                    if (article) {
+                        const { title, content } = article
+
+                        this.title = smde_title || title
+                        this.content = simplemde.value() || content
+                        simplemde.value(this.content)
+                    }
+                } else {
+                    this.title = smde_title
+                    this.content = simplemde.value()
                 }
-
-                // 使用编辑器的内容作为文章内容
-                this.content = simplemde.value()
             },
-            // 发布
             post() {
                 const title = this.title
                 const content = this.content
 
-                // 如果标题和内容都不为空，提交发布
                 if (title !== '' && content.trim() !== '') {
                     const article = {
                         title,
                         content
                     }
 
-                    // 分发 post 事件，并附带参数 { article }
-                    this.$store.dispatch('post', { article })
-                    // 清除数据
+                    this.$store.dispatch('post', { article, articleId: this.articleId })
                     this.clearData()
                 }
             },
-            // 清除数据
             clearData() {
                 this.title = ''
                 ls.removeItem('smde_title')
-                // 清除编辑的内容
                 this.simplemde.value('')
-                // 清除编辑器自动保存的内容
                 this.simplemde.clearAutosavedValue()
+            },
+            setArticleId(articleId) {
+                const localArticleId = ls.getItem('articleId')
+
+                if (articleId !== undefined && !(articleId === localArticleId)) {
+                    this.clearData()
+                }
+
+                this.articleId = articleId
+                this.fillContent(articleId)
+                ls.setItem('articleId', articleId)
             }
         }
     }
