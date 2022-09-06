@@ -36,7 +36,6 @@
         },
         methods: {
             close() {
-                // 可以触发一个事件来更新 show
                 this.$emit('update:show', false)
             }
         }
