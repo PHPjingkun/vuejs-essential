@@ -87,7 +87,7 @@
                         name: this.username,
                         password: this.password,
                         // 根据用户名，从线上返回一张头像
-                        avatar: `/src/assets/avatar.png`
+                        avatar: `https://img2.baidu.com/it/u=211113848,1401293897&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500`
                     }
                     // localStorage 的用户信息
                     const localUser = this.$store.state.user
