@@ -7,7 +7,7 @@
 <script>
     export default {
         name: 'Home',
-        data() {
+        data() {Edit
             return {
                 msg: '', // 消息
                 msgType: '', // 消息类型
