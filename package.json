@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "animate.css": "^3.7.2",
+    "axios": "^0.19.2",
     "bootstrap-sass": "^3.4.1",
     "codemirror": "^5.65.8",
     "core-js": "^3.8.3",
